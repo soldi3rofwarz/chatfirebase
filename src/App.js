@@ -25,8 +25,9 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-       
+      <header>
+      <h1>⚛️🔥💬</h1>
+        <SingOut/>
       </header>
       <section>
         {user? <ChatRoom/>: <SignIn/>}
@@ -44,23 +45,34 @@ function SingOut(){
 function ChatRoom(){
   const messageref = firestore.collection('mensajes')
   const query = messageref.orderBy('createAt').limit(25)
-
+  const [value, setvalue]= React.useState('')
   const [mensajes] = useCollectionData(query, {idField: 'id'})
+
+  const Enviar= async(e)=>{
+    e.preventDefault();
+    const {uid, photoURL}= auth.currentUser
+    
+    await messageref.add({
+      text: value,
+      createAt: firebase.firestore.FieldValue.serverTimestamp(), uid,photoURL
+    })
+  }
 
   return(<>
     <div>
       {mensajes && mensajes.map(msg=><ChatMessage key={msg.id} mensajes={msg}/>)}
     </div>
 
-    <form>
-      
+    <form onSubmit={Enviar}>
+      <input value={value} onChange={(e)=>setvalue(e.target.value)}/>
+      <button type='submit'>Enviar</button>
     </form>
     </>
   )
 }
 
 function ChatMessage(props){
-  const {text, uid} =props.mensajes
+  const {text, uid, photoURL} =props.mensajes
   const messageClass =uid=== auth.currentUser.uid? 'sent': 'received'
   return(
     <div className={`mensajes ${messageClass}`}>
@@ -76,7 +88,7 @@ function SignIn(){
     auth.signInWithPopup(provider)
   }
   return(
-    <button onClick={Sign}>Sign In</button>
+    <button className='google' onClick={Sign}>Sign In</button>
   )
 }
 
