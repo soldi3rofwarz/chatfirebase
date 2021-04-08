@@ -43,6 +43,8 @@ function SingOut(){
 }
 
 function ChatRoom(){
+  const dummy= React.useRef()
+
   const messageref = firestore.collection('mensajes')
   const query = messageref.orderBy('createAt').limit(25)
   const [value, setvalue]= React.useState('')
@@ -56,12 +58,15 @@ function ChatRoom(){
       text: value,
       createAt: firebase.firestore.FieldValue.serverTimestamp(), uid,photoURL
     })
+    setvalue("")
+    dummy.current.scrollIntoView({behavior:'smooth'})
   }
 
   return(<>
-    <div>
+    <main>
       {mensajes && mensajes.map(msg=><ChatMessage key={msg.id} mensajes={msg}/>)}
-    </div>
+      <div ref={dummy}></div>
+    </main>
 
     <form onSubmit={Enviar}>
       <input value={value} onChange={(e)=>setvalue(e.target.value)}/>
@@ -76,7 +81,7 @@ function ChatMessage(props){
   const messageClass =uid=== auth.currentUser.uid? 'sent': 'received'
   return(
     <div className={`mensajes ${messageClass}`}>
-      <img src={photoURL} />
+      <img src={photoURL} alt="f"/>
     <p>{text}</p>
     </div>
   )
